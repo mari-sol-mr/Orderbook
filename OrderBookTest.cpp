@@ -12,7 +12,8 @@ int main()
 
     
 
-    ob.submitOrderRequest(OrderType::Limit, MarketSide::Sell, 5, 1);
+    ob.submitOrderRequest(OrderType::Limit, MarketSide::Sell, 5, 2);
+    ob.submitOrderRequest(OrderType::Limit, MarketSide::Buy, 5, 1);
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Buy, 5, 1);
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Sell, 5, 1);
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Buy, 5, 1);

@@ -51,7 +51,6 @@ public:
         tradeHistory_.push_back(trade);
     }
 
-        // todo: mayeb there shouldn't be a difference bw orders? just order1 and order2?
     TradePointer executeTrade(OrderPointer order1, OrderPointer order2)
     {
         Quantity tradeQuantity = std::min(order1->getRemainingQuantity(), order2->getRemainingQuantity());
@@ -59,7 +58,7 @@ public:
         order1->fillOrder(tradeQuantity);
         order2->fillOrder(tradeQuantity);
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         return std::make_shared<Trade>(order1->getPrice(), order2->getOrderId(), order1->getOrderId(), tradeQuantity);
     }
