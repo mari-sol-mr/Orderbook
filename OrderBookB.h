@@ -55,7 +55,7 @@ public:
     TradePointer executeTrade(OrderPointer order1, OrderPointer order2)
     {
         Quantity tradeQuantity = std::min(order1->getRemainingQuantity(), order2->getRemainingQuantity());
-        std::cout << "tradequantity: " <<tradeQuantity << "\n";
+
         order1->fillOrder(tradeQuantity);
         order2->fillOrder(tradeQuantity);
 
@@ -66,16 +66,13 @@ public:
 
     void matchOrder(OrderPointer order)
     {
-        std::string ordertype = order->getMarketSide() == MarketSide::Buy ? " buy order " : " sell order ";
-        std::cout << "\n\nmatching " << ordertype << order->getOrderId() << "\n";
         OrdersQueue* unfilledOrders = order->getMarketSide() == MarketSide::Buy ? &unfilledAsks_[order->getPrice()] : &unfilledBids_[order->getPrice()]; // todo: refactor. potentialMatches?
 
         bool matchAvailable = !unfilledOrders->empty();
-        if (matchAvailable) std::cout << "there is an unfilled order \n";
+
         while(!order->isFilled() && matchAvailable)
         {
             OrderPointer bestMatch = unfilledOrders->front();
-            std::cout << "best match: " << bestMatch->getOrderId() << "\n";
 
             TradePointer trade = executeTrade(order, bestMatch);
             
@@ -83,29 +80,16 @@ public:
 
             if (bestMatch->isFilled())
             {
-                std::cout<< "best match filled\n";
                 unfilledOrders->pop();
             }
 
             matchAvailable = !unfilledOrders->empty();
-
-            if (!matchAvailable) std::cout << "all opposite side orders filled\n";
         }
 
         if (!order->isFilled())
         {
-            std::cout<< "queueing order, it is not filled yet\n"; 
             queueOrder(order);
         }
-
-            matchAvailable = !unfilledOrders->empty();
-
-            if (!matchAvailable) std::cout << "check 2: all opposite side orders filled\n";
-
-            OrdersQueue bids_check =  unfilledBids_[order->getPrice()];
-            std::cout<< "checking remaining bids: ";
-            if (bids_check.empty() ) std::cout << "bids are empty\n";
-            else std::cout << "bids are not empty\n";
     }
 
     void queueOrder(OrderPointer order)
