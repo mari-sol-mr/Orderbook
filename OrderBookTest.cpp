@@ -15,11 +15,14 @@ int main()
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Sell, 5, 2);
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Buy, 5, 1);
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Buy, 5, 1);
+
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Sell, 5, 1);
     ob.submitOrderRequest(OrderType::Limit, MarketSide::Buy, 5, 1);
 
-    
+    ob.submitOrderRequest(OrderType::Limit, MarketSide::Sell, 9, 1);
+    ob.submitOrderRequest(OrderType::Market, MarketSide::Buy, 1);
+
     ob.printTradeHistory();
     return 0;
 }
-//g++ OrderBookTest.cpp -o OrderBookTest
+//g++ -std=c++20 OrderBookTest.cpp -o OrderBookTest

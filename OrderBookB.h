@@ -19,6 +19,8 @@ public:
         orderHistory_.reserve(100000000);
     }
 
+    // todo: benchmark test: compare single vs multi-threaded: do loggin stuff on a separate thread.
+    //todo: debugger for cpp in vscode??
     void submitOrderRequest(OrderType orderType, MarketSide marketSide, Price price, Quantity quantity)
     {
         OrderPointer newOrder = createOrder(orderType, marketSide, price, quantity);
@@ -26,7 +28,16 @@ public:
         logOrder(newOrder);
 
         matchOrder(newOrder);
+    }
 
+    void submitOrderRequest(OrderType orderType, MarketSide marketSide, Quantity quantity)
+    {
+        std::cout << "market order submitted\n";
+
+        // todo: what if bids and asks are empty?
+        Price bestPrice = marketSide == MarketSide::Buy ? unfilledAsks_.begin()->first : unfilledBids_.begin()->first;
+        std::cout << "best price: " << bestPrice << "\n";
+        submitOrderRequest(orderType, marketSide, bestPrice, quantity);
     }
 
     OrderPointer createOrder(OrderType orderType, MarketSide marketSide, Price price, Quantity quantity)
@@ -65,9 +76,14 @@ public:
 
     void matchOrder(OrderPointer order)
     {
-        OrdersQueue* unfilledOrders = order->getMarketSide() == MarketSide::Buy ? &unfilledAsks_[order->getPrice()] : &unfilledBids_[order->getPrice()]; // todo: refactor. potentialMatches?
+        bool matchAvailable = canMatch(order);
 
-        bool matchAvailable = !unfilledOrders->empty();
+        if (!matchAvailable){
+            queueOrder(order);
+            return;
+        }
+        
+        OrdersQueue* unfilledOrders = MarketSide::Buy == order->getMarketSide() ? &unfilledAsks_[order->getPrice()] : &unfilledBids_[order->getPrice()];
 
         while(!order->isFilled() && matchAvailable)
         {
@@ -82,13 +98,30 @@ public:
                 unfilledOrders->pop();
             }
 
-            matchAvailable = !unfilledOrders->empty();
+            if (unfilledOrders->empty())
+            {
+                matchAvailable = false;
+                if (bestMatch->getMarketSide() == MarketSide::Buy)
+                    unfilledBids_.erase(unfilledBids_.begin());
+                else
+                    unfilledAsks_.erase(unfilledAsks_.begin());
+            }
         }
 
         if (!order->isFilled())
         {
             queueOrder(order);
         }
+
+        std::cout << "\n\n\n";
+    }
+
+    bool canMatch(OrderPointer order)
+    {
+        if (order->getMarketSide() == MarketSide::Buy) 
+            return unfilledAsks_.contains(order->getPrice()) && !unfilledAsks_[order->getPrice()].empty();
+        else 
+            return unfilledBids_.contains(order->getPrice()) && !unfilledBids_[order->getPrice()].empty();
     }
 
     void queueOrder(OrderPointer order)
@@ -105,7 +138,7 @@ public:
         for (const auto& trade : tradeHistory_)
         {
             std::cout << "Traded quantity " << trade->getQuantity() << " at price " << trade->getPrice()
-            << " with orders " << trade->getAskOrderId() << " and " << trade->getBidOrderId() << "\n"; // todo: create getters
+            << " with orders " << trade->getAskOrderId() << " and " << trade->getBidOrderId() << "\n"; 
         }
     }
 
